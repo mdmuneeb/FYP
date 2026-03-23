@@ -18,6 +18,11 @@ class RicePipeline:
 
     def predict(self, image):
 
+        if image is None:
+            raise ValueError("Pipeline received None image")
+
+        print("📸 Pipeline image shape:", image.shape)
+
         crops = self.detector.detect_and_crop(image)
 
         boxes = self.detector.last_boxes

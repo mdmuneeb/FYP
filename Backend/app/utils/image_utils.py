@@ -1,12 +1,14 @@
 import cv2
 import numpy as np
 
+
 def pad_and_resize(img, size=224):
 
     h, w = img.shape[:2]
     m = max(h, w)
 
-    canvas = np.zeros((m, m, 3), dtype=np.uint8)
+    # 🔥 use gray padding instead of black
+    canvas = np.full((m, m, 3), 200, dtype=np.uint8)
 
     y_offset = (m - h) // 2
     x_offset = (m - w) // 2

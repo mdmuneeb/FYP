@@ -3,7 +3,7 @@ import cv2
 CLASS_COLORS = {
     "1509": (0, 255, 0),
     "IRRI-6": (255, 0, 0),
-    "Super_White": (0, 0, 255),
+    "Super White": (0, 0, 255),
     "Unknown": (0, 255, 255)
 }
 

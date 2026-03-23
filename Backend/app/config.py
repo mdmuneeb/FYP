@@ -13,4 +13,4 @@ XGB_MODEL = BASE_DIR / "models/xgboost/xgboost_model.pkl"
 IMG_SIZE = 224
 UNKNOWN_THRESHOLD = 0.6
 
-CLASS_NAMES = ["1509", "IRRI-6", "Super_White"]
+CLASS_NAMES = ["1509", "IRRI-6", "Super White"]
