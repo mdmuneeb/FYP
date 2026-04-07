@@ -6,6 +6,7 @@ from .detector import GrainDetector
 from .classifier import CNNEnsemble
 from .meta_model import MetaClassifier
 from .debug_visualizer import draw_predictions
+from fastapi.staticfiles import StaticFiles
 
 
 class RicePipeline:
@@ -15,6 +16,7 @@ class RicePipeline:
         self.detector = GrainDetector()
         self.cnn = CNNEnsemble()
         self.meta = MetaClassifier()
+        self.BASE_URL = "http://localhost:8000"
 
     def predict(self, image):
 
@@ -44,15 +46,19 @@ class RicePipeline:
 
                 label, prob = self.meta.predict(features)
 
+
                 # Save crop image
                 save_path = os.path.join(folder_name, f"grain_{i}_{label}.jpg")
                 cv2.imwrite(save_path, crop)
+                
+                image_url = self.BASE_URL + "/" + save_path.replace("\\", "/")
 
                 # Save features to text file
                 feature_line = f"grain_{i}, class={label}, conf={prob:.4f}, features={features.tolist()}\n"
                 f.write(feature_line)
 
                 results.append({
+                    "image": image_url,
                     "class": label,
                     "confidence": float(prob)
                 })

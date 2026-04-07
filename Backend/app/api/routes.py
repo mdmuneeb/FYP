@@ -24,34 +24,8 @@ async def predict(file: UploadFile = File(...)):
     if not contents:
         raise ValueError("Empty file uploaded")
 
-    print("📂 File:", file.filename)
-    print("🧾 Type:", file.content_type)
-    print("📦 Size (bytes):", len(contents))
-
-    # =========================
-    # Try OpenCV first (JPG/PNG)
-    # =========================
     nparr = np.frombuffer(contents, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-    # =========================
-    # Fallback → HEIC support
-    # =========================
-    if img is None:
-        print("⚠️ OpenCV failed → trying PIL (HEIC support)")
-
-        try:
-            from PIL import Image
-            import pillow_heif
-            import io
-
-            pillow_heif.register_heif_opener()
-
-            image = Image.open(io.BytesIO(contents)).convert("RGB")
-            img = np.array(image)
-
-        except Exception as e:
-            raise ValueError(f"Unsupported image format: {str(e)}")
 
     # =========================
     # Final safety check
@@ -61,14 +35,8 @@ async def predict(file: UploadFile = File(...)):
 
     print("✅ Image shape:", img.shape)
 
-    # =========================
-    # Run pipeline
-    # =========================
     results = pipeline.predict(img)
 
-    # =========================
-    # Summary
-    # =========================
     labels = [p["class"] for p in results]
     counts = Counter(labels)
 
@@ -76,4 +44,16 @@ async def predict(file: UploadFile = File(...)):
         "num_grains": len(results),
         "summary": dict(counts),
         "predictions": results
+    }
+
+@router.get("/")
+def root():
+    return {
+        "status": "API is running",
+        "service": "Rice Grain Classification",
+        "version": "1.0",
+        "endpoints": {
+            "predict": "/predict",
+            "docs": "/docs"
+        }
     }

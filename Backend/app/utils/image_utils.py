@@ -7,8 +7,9 @@ def pad_and_resize(img, size=224):
     h, w = img.shape[:2]
     m = max(h, w)
 
-    # 🔥 use gray padding instead of black
-    canvas = np.full((m, m, 3), 200, dtype=np.uint8)
+   
+    # canvas = np.full((m, m, 3), 200, dtype=np.uint8)
+    canvas = np.full((m, m, 3), 0, dtype=np.uint8)
 
     y_offset = (m - h) // 2
     x_offset = (m - w) // 2
