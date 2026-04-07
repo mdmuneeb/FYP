@@ -300,7 +300,7 @@ if uploaded_file is not None:
             # =========================
             # SUMMARY SECTION
             # =========================
-            st.markdown('<div class="section-header"><h2>📊 Summary Statistics</h2></div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-header"><h2>Summary Statistics</h2></div>', unsafe_allow_html=True)
             
             # Key metrics
             metric_col1, metric_col2, metric_col3 = st.columns(3)
