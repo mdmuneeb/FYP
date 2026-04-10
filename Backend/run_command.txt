@@ -1,3 +1,5 @@
 uvicorn test:app --reload
 
 streamlit run frontend/streamlitApp.py
+
+docker run -p 8888:8000 muhammadmuneebzafar/rice-grain-variety-classifier

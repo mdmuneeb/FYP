@@ -10,7 +10,7 @@ from datetime import datetime
 # =========================
 # CONFIG & STYLING
 # =========================
-API_URL_DISPLAY = "http://localhost:8000/docs"  # URL shown in UI
+API_URL_DISPLAY = "http://localhost:8888/docs"  # URL shown in UI
 API_URL = "http://localhost:8000/predict"       # Actual API endpoint
 
 st.set_page_config(
@@ -379,7 +379,7 @@ if uploaded_file is not None:
             # =========================
             # DETAILED PREDICTIONS
             # =========================
-            st.markdown('<div class="section-header"><h2>🔍 Detailed Predictions</h2></div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-header"><h2>Detailed Predictions</h2></div>', unsafe_allow_html=True)
             
             # Sorting and filtering options
             filter_col1, filter_col2, filter_col3 = st.columns([1, 1, 2])
