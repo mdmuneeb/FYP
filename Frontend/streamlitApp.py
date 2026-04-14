@@ -1,17 +1,25 @@
 import streamlit as st
 import requests
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 import io
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime
 
+# Try to enable HEIC support if pillow-heif is installed
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except ImportError:
+    pass  # HEIC support not available
+
 # =========================
 # CONFIG & STYLING
 # =========================
 API_URL_DISPLAY = "http://localhost:8888/docs"  # URL shown in UI
-API_URL = "http://localhost:8000/predict"       # Actual API endpoint
+# API_URL = "http://localhost:8000/predict"       # Actual API endpoint
+API_URL = "http://localhost:8888/predict"       # Actual API endpoint
 
 st.set_page_config(
     page_title="Rice Grain Classifier",
@@ -247,8 +255,15 @@ if uploaded_file is not None:
     img_col, info_col = st.columns([1, 1])
     
     with img_col:
-        image = Image.open(uploaded_file)
-        st.image(image, caption="📷 Uploaded Image", width=400)
+        try:
+            image = Image.open(uploaded_file)
+            st.image(image, caption="📷 Uploaded Image", width=400)
+        except UnidentifiedImageError:
+            if uploaded_file.name.lower().endswith('.heic'):
+                st.error("HEIC image format is not supported. Please convert your image to JPG or PNG format.")
+            else:
+                st.error("Unable to identify the image file. Please ensure it's a valid image format (JPG, PNG, etc.).")
+            st.stop()
     
     with info_col:
         st.markdown('<div class="metric-card">', unsafe_allow_html=True)
@@ -511,3 +526,117 @@ else:
         <p>Supported formats: JPG, JPEG, PNG, HEIC</p>
     </div>
     """, unsafe_allow_html=True)
+
+# import streamlit as st
+# import requests
+# from PIL import Image, UnidentifiedImageError
+# import io
+# import pandas as pd
+# import plotly.graph_objects as go
+# import plotly.express as px
+# from datetime import datetime
+
+# # Try to enable HEIC support if pillow-heif is installed
+# try:
+#     from pillow_heif import register_heif_opener
+#     register_heif_opener()
+# except ImportError:
+#     pass
+
+# # =========================
+# # CONFIG
+# # =========================
+# API_URL = "http://localhost:8000/predict"
+# # API_URL = "http://localhost:8888/predict"
+
+# st.set_page_config(
+#     page_title="Rice Grain Classifier",
+#     layout="wide"
+# )
+
+# # =========================
+# # SIDEBAR
+# # =========================
+# with st.sidebar:
+#     st.markdown("### ⚙️ Settings")
+#     API_URL = st.text_input("API URL", value=API_URL)
+
+#     st.markdown("---")
+
+#     # 🔥 Reset button (VERY IMPORTANT)
+#     if st.button("Reset Results"):
+#         st.session_state.clear()
+#         st.rerun()
+
+# # =========================
+# # MAIN
+# # =========================
+# st.title("🌾 Rice Grain Classification")
+
+# uploaded_file = st.file_uploader(
+#     "Upload Image",
+#     type=["jpg", "jpeg", "png", "heic"]
+# )
+
+# if uploaded_file is not None:
+
+#     try:
+#         image = Image.open(uploaded_file)
+#         st.image(image, caption="Uploaded Image", width=400)
+#     except UnidentifiedImageError:
+#         st.error("Invalid image")
+#         st.stop()
+
+#     if st.button("Analyze Image"):
+
+#         with st.spinner("Processing..."):
+
+#             files = {
+#                 "file": (
+#                     uploaded_file.name,
+#                     uploaded_file.getvalue(),
+#                     uploaded_file.type
+#                 )
+#             }
+
+#             try:
+#                 response = requests.post(API_URL, files=files, timeout=60)
+
+#                 if response.status_code == 200:
+#                     st.session_state.data = response.json()
+#                 else:
+#                     st.error(response.text)
+#                     st.stop()
+
+#             except Exception as e:
+#                 st.error(f"Error: {str(e)}")
+#                 st.stop()
+
+# # =========================
+# # DISPLAY RESULTS
+# # =========================
+# if "data" in st.session_state:
+
+#     data = st.session_state.data
+
+#     st.success("✅ Analysis Complete")
+
+#     st.write("### Summary")
+#     st.write(data["summary"])
+
+#     st.write("### Predictions")
+
+#     base_url = API_URL.replace("/predict", "")
+
+#     cols = st.columns(4)
+
+#     for i, pred in enumerate(data["predictions"]):
+#         col = cols[i % 4]
+
+#         with col:
+#             # 🔥 FIXED IMAGE URL
+#             full_url = base_url + pred["image"]
+
+#             st.image(full_url, use_container_width=True)
+#             st.write(pred["class"])
+#             st.progress(pred["confidence"])

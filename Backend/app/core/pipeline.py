@@ -1,22 +1,19 @@
 import os
-import uuid
 import cv2
+import shutil
 
 from .detector import GrainDetector
 from .classifier import CNNEnsemble
 from .meta_model import MetaClassifier
 from .debug_visualizer import draw_predictions
-from fastapi.staticfiles import StaticFiles
 
 
 class RicePipeline:
 
     def __init__(self):
-
         self.detector = GrainDetector()
         self.cnn = CNNEnsemble()
         self.meta = MetaClassifier()
-        self.BASE_URL = "http://localhost:8000"
 
     def predict(self, image):
 
@@ -26,16 +23,24 @@ class RicePipeline:
         print("📸 Pipeline image shape:", image.shape)
 
         crops = self.detector.detect_and_crop(image)
-
         boxes = self.detector.last_boxes
 
         results = []
 
-        # Create folder for this request
-        folder_name = f"grain_crops/{uuid.uuid4().hex[:8]}"
+        # Ensure base folder exists
+        base_folder = "grain_crops"
+        os.makedirs(base_folder, exist_ok=True)
+
+        # Use single results folder (overwrite mode)
+        folder_name = os.path.join(base_folder, "results")
+
+        # Clear old results
+        if os.path.exists(folder_name):
+            shutil.rmtree(folder_name)
+
         os.makedirs(folder_name, exist_ok=True)
 
-        # Create feature log file
+        # Feature log file
         feature_file_path = os.path.join(folder_name, "features.txt")
 
         with open(feature_file_path, "w") as f:
@@ -43,18 +48,24 @@ class RicePipeline:
             for i, crop in enumerate(crops):
 
                 features = self.cnn.predict(crop)
-
                 label, prob = self.meta.predict(features)
 
-
                 # Save crop image
-                save_path = os.path.join(folder_name, f"grain_{i}_{label}.jpg")
-                cv2.imwrite(save_path, crop)
-                
-                image_url = self.BASE_URL + "/" + save_path.replace("\\", "/")
+                filename = f"grain_{i}_{label}.jpg"
+                save_path = os.path.join(folder_name, filename)
 
-                # Save features to text file
-                feature_line = f"grain_{i}, class={label}, conf={prob:.4f}, features={features.tolist()}\n"
+                success = cv2.imwrite(save_path, crop)
+                if not success:
+                    print(f"⚠️ Failed to save {save_path}")
+
+                # ✅ IMPORTANT: return RELATIVE path (DOCKER SAFE)
+                image_url = f"/grain_crops/results/{filename}"
+
+                # Save features
+                feature_line = (
+                    f"grain_{i}, class={label}, "
+                    f"conf={prob:.4f}, features={features.tolist()}\n"
+                )
                 f.write(feature_line)
 
                 results.append({
@@ -63,7 +74,7 @@ class RicePipeline:
                     "confidence": float(prob)
                 })
 
-        # Draw debug visualization
+        # Debug visualization
         draw_predictions(
             image,
             boxes,
