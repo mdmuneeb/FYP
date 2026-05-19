@@ -30,7 +30,7 @@ class OpenSetRecognizer:
 
         print("Min:", min_dist, "Margin:", margin)
 
-        # 🔥 FINAL RULE
+        # FINAL RULE
 
         # far → unknown
         if min_dist > 0.9:

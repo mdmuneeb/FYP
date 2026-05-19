@@ -45,7 +45,7 @@ for cls in os.listdir(DATA_DIR):
 
         feat = out["features"]
 
-        # 🔥 IMPORTANT: Normalize feature BEFORE saving
+        # IMPORTANT: Normalize feature BEFORE saving
         feat = feat / np.linalg.norm(feat)
 
         feats.append(feat)
@@ -60,4 +60,4 @@ os.makedirs(os.path.dirname(OSR), exist_ok=True)
 
 joblib.dump(centroids, OSR)
 
-print("✅ Centroids saved at:", OSR)
+print(" Centroids saved at:", OSR)

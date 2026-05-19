@@ -89,6 +89,6 @@ class CNNEnsemble:
             m = torch.softmax(self.mobilenet(x), dim=1).cpu().numpy()[0]
             r = torch.softmax(self.resnet(x), dim=1).cpu().numpy()[0]
 
-        # 🔥 9 features for XGBoost
+        # 9 features for XGBoost
         # return np.concatenate([e, m, r])
         return np.concatenate([m, e, r])
